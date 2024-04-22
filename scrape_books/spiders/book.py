@@ -20,7 +20,8 @@ class BookSpider(scrapy.Spider):
         books = response.css("div ol.row li")
         for book in books:
             detailed_url = response.urljoin(book.css("h3 a::attr(href)").get())
-            yield scrapy.Request(detailed_url, callback=self._parse_book_detail)
+            yield scrapy.Request(detailed_url,
+                                 callback=self._parse_book_detail)
 
         next_page = response.css("ul.pager li.next a::attr(href)").get()
         if next_page is not None:
@@ -30,7 +31,9 @@ class BookSpider(scrapy.Spider):
     def _parse_book_detail(response: Response) -> dict[str, str]:
         yield {
             "title": response.css("h1::text").get(),
-            "price": float(response.css("p.price_color::text").get().replace("£", "")),
+            "price": float(response.css(
+                "p.price_color::text"
+            ).get().replace("£", "")),
             "amount_in_stock": int(response.css(
                 ".table.table-striped tr td::text"
             ).getall()[-2].split()[-2].replace("(", "")),
@@ -38,6 +41,10 @@ class BookSpider(scrapy.Spider):
                 "p.star-rating::attr(class)"
             ).get().split()[1].lower()],
             "category": response.css(".breadcrumb li a::text")[2].get(),
-            "description": response.css("article.product_page > p::text").get(),
-            "upc": response.css(".table.table-striped tr td::text").getall()[0],
+            "description": response.css(
+                "article.product_page > p::text"
+            ).get(),
+            "upc": response.css(
+                ".table.table-striped tr td::text"
+            ).getall()[0],
         }
